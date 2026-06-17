@@ -1,5 +1,8 @@
 import React, { useState, useRef, useEffect } from "react";
 
+// ============================================================
+// GHANA REGIONS LIST (for search suggestions)
+// ============================================================
 const GHANA_REGIONS = [
   "Greater Accra",
   "Ashanti",
@@ -10,7 +13,6 @@ const GHANA_REGIONS = [
   "Upper East",
   "Upper West",
   "Volta",
-  "Brong-Ahafo",
   "Bono",
   "Bono East",
   "Ahafo",
@@ -22,6 +24,34 @@ const GHANA_REGIONS = [
 
 const NAV_LINKS = ["Home", "Forecast", "Map", "About"];
 
+// ============================================================
+// SVG ICONS (Clean, modern alternatives to basic emojis)
+// ============================================================
+const SunCloudIcon = () => (
+  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <path d="M12 2V4M12 20V22M4 12H2M22 12H20M19.07 4.93L17.66 6.34M6.34 17.66L4.93 19.07M19.07 19.07L17.66 17.66M6.34 6.34L4.93 4.93" stroke="#FFD23F" strokeWidth="2" strokeLinecap="round"/>
+    <circle cx="12" cy="12" r="4" fill="#FFD23F"/>
+    <path d="M22 17.5C22 15.57 20.43 14 18.5 14C18.21 14 17.94 14.04 17.68 14.11C16.94 12.28 15.12 11 13 11C10.24 11 8 13.24 8 16C8 16.17 8.01 16.33 8.03 16.5C6.34 16.74 5 18.22 5 20C5 21.1 5.9 22 7 22H18.5C20.43 22 22 20.43 22 17.5Z" fill="#FFFFFF" stroke="#E2E8F0" strokeWidth="1"/>
+  </svg>
+);
+
+const SearchIcon = () => (
+  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+    <circle cx="11" cy="11" r="8"></circle>
+    <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
+  </svg>
+);
+
+const LocationIcon = () => (
+  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"></path>
+    <circle cx="12" cy="10" r="3"></circle>
+  </svg>
+);
+
+// ============================================================
+// MAIN NAVBAR COMPONENT
+// ============================================================
 const Navbar = ({ onSearch, onLocationClick }) => {
   const [menuOpen, setMenuOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
@@ -29,17 +59,16 @@ const Navbar = ({ onSearch, onLocationClick }) => {
   const [showDrop, setShowDrop] = useState(false);
   const [activeLink, setActiveLink] = useState("Home");
   const [scrolled, setScrolled] = useState(false);
+
   const inputRef = useRef(null);
   const dropRef = useRef(null);
 
-  // Navbar shadow on scroll
   useEffect(() => {
-    const onScroll = () => setScrolled(window.scrollY > 10);
+    const onScroll = () => setScrolled(window.scrollY > 20);
     window.addEventListener("scroll", onScroll);
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
-  // Close dropdown on outside click
   useEffect(() => {
     const handler = (e) => {
       if (dropRef.current && !dropRef.current.contains(e.target)) {
@@ -54,8 +83,8 @@ const Navbar = ({ onSearch, onLocationClick }) => {
     const val = e.target.value;
     setSearchQuery(val);
     if (val.trim().length > 0) {
-      const filtered = GHANA_REGIONS.filter((r) =>
-        r.toLowerCase().includes(val.toLowerCase())
+      const filtered = GHANA_REGIONS.filter((region) =>
+        region.toLowerCase().includes(val.toLowerCase())
       );
       setSuggestions(filtered);
       setShowDrop(filtered.length > 0);
@@ -85,123 +114,92 @@ const Navbar = ({ onSearch, onLocationClick }) => {
     setShowDrop(false);
   };
 
-  const handleKeyDown = (e) => {
-    if (e.key === "Escape") {
-      setShowDrop(false);
-      inputRef.current?.blur();
-    }
-  };
-
   return (
     <>
-      {/* ── GLOBAL WEATHER STYLES (Sky / Ocean / Sun accents) ── */}
       <style>{`
-        @import url('https://fonts.googleapis.com/css2?family=Inter:opsz,wght@14..32,400;14..32,500;14..32,600;14..32,700;14..32,800&display=swap');
+        @import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap');
 
-        .gh-nav * { font-family: 'Inter', system-ui, -apple-system, sans-serif; box-sizing: border-box; }
+        :root {
+          --nav-bg-solid: #1e3a8a;
+          --nav-bg-glass: rgba(15, 32, 67, 0.75);
+          --text-main: #ffffff;
+          --text-muted: #94a3b8;
+          --accent: #38bdf8;
+          --accent-hover: #7dd3fc;
+          --card-bg: rgba(255, 255, 255, 0.96);
+          --border-color: rgba(255, 255, 255, 0.12);
+        }
 
+        .gh-nav * {
+          font-family: 'Plus Jakarta Sans', -apple-system, sans-serif;
+          box-sizing: border-box;
+        }
+
+        /* Sophisticated Sticky Glassmorphic Header */
         .gh-nav {
           position: sticky;
           top: 0;
           z-index: 1000;
-          background: linear-gradient(135deg, #0F4C75 0%, #3282B8 50%, #0B3B5F 100%);
-          transition: box-shadow 0.3s ease;
+          background: var(--nav-bg-glass);
+          backdrop-filter: blur(16px);
+          -webkit-backdrop-filter: blur(16px);
+          border-bottom: 1px solid var(--border-color);
+          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
         }
 
         .gh-nav.scrolled {
-          box-shadow: 0 10px 30px -8px rgba(0,0,0,0.25);
-        }
-
-        /* subtle weather line (like a sun ray / cloud streak) */
-        .gh-nav::before {
-          content: '';
-          position: absolute;
-          top: 0;
-          left: 0;
-          right: 0;
-          height: 2px;
-          background: linear-gradient(90deg, #F9C74F, #F9844A, #90BE6D, #F9C74F);
-          opacity: 0.8;
+          box-shadow: 0 10px 30px -10px rgba(0, 0, 0, 0.3);
+          background: rgba(10, 22, 47, 0.85);
         }
 
         .nav-inner {
           max-width: 1280px;
           margin: 0 auto;
           padding: 0 24px;
-          height: 72px;
+          height: 76px;
           display: flex;
           align-items: center;
           justify-content: space-between;
-          gap: 20px;
+          gap: 24px;
         }
 
-        /* Logo + Weather icon */
+        /* Branding logo styling */
         .nav-logo {
           display: flex;
           align-items: center;
-          gap: 10px;
-          flex-shrink: 0;
+          gap: 12px;
           text-decoration: none;
+          user-select: none;
         }
 
-        .logo-icon-wrap {
-          position: relative;
-          width: 44px;
-          height: 44px;
-          background: rgba(255,255,255,0.12);
-          border-radius: 14px;
+        .logo-text {
           display: flex;
-          align-items: center;
-          justify-content: center;
-          border: 1px solid rgba(255,255,255,0.2);
-          backdrop-filter: blur(6px);
+          flex-direction: column;
         }
 
-        .logo-icon-wrap .weather-icon {
-          font-size: 24px;
-          filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
-        }
-
-        .logo-icon-wrap .star-badge {
-          position: absolute;
-          top: -4px;
-          right: -4px;
-          background: #F9C74F;
-          color: #0B3B5F;
-          font-size: 11px;
-          width: 18px;
-          height: 18px;
-          border-radius: 50%;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-          font-weight: 800;
-          border: 1.5px solid white;
-          box-shadow: 0 1px 3px rgba(0,0,0,0.2);
-        }
-
-        .logo-text { display: flex; flex-direction: column; line-height: 1.1; }
         .logo-title {
-          font-size: 1.35rem;
-          font-weight: 800;
-          color: white;
-          letter-spacing: -0.3px;
-          text-shadow: 0 1px 2px rgba(0,0,0,0.1);
-        }
-        .logo-title span { color: #F9C74F; font-weight: 800; }
-        .logo-sub {
-          font-size: 0.7rem;
-          font-weight: 600;
-          color: rgba(255,255,255,0.7);
-          letter-spacing: 1px;
-          text-transform: uppercase;
+          font-size: 1.25rem;
+          font-weight: 700;
+          color: var(--text-main);
+          letter-spacing: -0.5px;
+          line-height: 1.2;
         }
 
-        /* Desktop nav links - clean & modern */
+        .logo-title span {
+          color: var(--accent);
+        }
+
+        .logo-sub {
+          font-size: 0.75rem;
+          font-weight: 500;
+          color: var(--text-muted);
+          letter-spacing: 0.5px;
+        }
+
+        /* Horizontal Desktop Nav Items */
         .nav-links {
           display: flex;
-          align-items: center;
-          gap: 6px;
+          gap: 8px;
           list-style: none;
           margin: 0;
           padding: 0;
@@ -211,239 +209,239 @@ const Navbar = ({ onSearch, onLocationClick }) => {
           background: none;
           border: none;
           cursor: pointer;
-          color: rgba(255,255,255,0.85);
+          color: #cbd5e1;
           font-size: 0.9rem;
           font-weight: 600;
           padding: 8px 16px;
-          border-radius: 40px;
+          border-radius: 8px;
           transition: all 0.2s ease;
-          position: relative;
-        }
-        .nav-link-btn:hover {
-          background: rgba(255,255,255,0.12);
-          color: white;
-        }
-        .nav-link-btn.active {
-          background: rgba(255,255,255,0.2);
-          color: #F9C74F;
-          backdrop-filter: blur(4px);
         }
 
-        /* Search container */
+        .nav-link-btn:hover {
+          color: var(--text-main);
+          background: rgba(255, 255, 255, 0.06);
+        }
+
+        .nav-link-btn.active {
+          background: rgba(56, 189, 248, 0.15);
+          color: var(--accent);
+        }
+
+        /* Fluid Search Architecture */
         .search-wrap {
           position: relative;
           flex: 1;
-          max-width: 380px;
+          max-width: 340px;
         }
 
         .search-form {
           display: flex;
           align-items: center;
-          background: rgba(255,255,255,0.1);
-          border: 1px solid rgba(255,255,255,0.3);
-          border-radius: 56px;
-          backdrop-filter: blur(12px);
-          transition: all 0.2s;
+          background: rgba(255, 255, 255, 0.07);
+          border-radius: 12px;
+          padding: 2px;
+          border: 1px solid var(--border-color);
+          transition: all 0.2s ease;
         }
+
         .search-form:focus-within {
-          background: rgba(255,255,255,0.18);
-          border-color: #F9C74F;
-          box-shadow: 0 0 0 2px rgba(249,199,79,0.3);
+          background: rgba(255, 255, 255, 0.12);
+          border-color: var(--accent);
+          box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.25);
         }
 
         .search-flag {
-          padding: 0 6px 0 16px;
-          font-size: 1rem;
-          filter: drop-shadow(0 1px 1px rgba(0,0,0,0.2));
+          padding-left: 14px;
+          display: flex;
+          align-items: center;
+          font-size: 1.1rem;
         }
 
         .search-input {
           flex: 1;
-          background: transparent;
           border: none;
           outline: none;
-          color: white;
-          font-size: 0.85rem;
+          padding: 10px 12px;
+          font-size: 0.875rem;
           font-weight: 500;
-          padding: 10px 6px;
-          min-width: 0;
+          color: var(--text-main);
+          background: transparent;
         }
+
         .search-input::placeholder {
-          color: rgba(255,255,255,0.6);
-          font-weight: 500;
+          color: #64748b;
         }
 
         .search-btn {
-          background: #F9C74F;
+          background: var(--accent);
           border: none;
           cursor: pointer;
-          color: #0B3B5F;
-          font-size: 0.75rem;
+          color: #0f172a;
           font-weight: 700;
-          padding: 7px 18px;
-          border-radius: 56px;
-          margin: 3px;
-          transition: all 0.2s ease;
+          font-size: 0.8rem;
+          padding: 8px 14px;
+          border-radius: 8px;
+          transition: all 0.15s ease;
           display: flex;
           align-items: center;
-          gap: 5px;
-          letter-spacing: 0.3px;
-        }
-        .search-btn:hover {
-          background: #FFD966;
-          transform: scale(1.02);
+          gap: 6px;
         }
 
-        /* Region dropdown (weather-inspired) */
+        .search-btn:hover {
+          background: var(--accent-hover);
+          transform: translateY(-1px);
+        }
+
+        /* Search Results Overlay Dropdown */
         .region-dropdown {
           position: absolute;
           top: calc(100% + 8px);
           left: 0;
           right: 0;
-          background: #0f2b3c;
-          border: 1px solid rgba(249,199,79,0.3);
-          border-radius: 20px;
+          background: var(--card-bg);
+          border-radius: 12px;
+          box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.2), 0 10px 10px -5px rgba(0, 0, 0, 0.1);
           overflow: hidden;
           z-index: 999;
-          box-shadow: 0 20px 35px -10px rgba(0,0,0,0.4);
-          backdrop-filter: blur(12px);
-          animation: fadeDown 0.2s ease;
-        }
-        @keyframes fadeDown {
-          from { opacity: 0; transform: translateY(-8px); }
-          to { opacity: 1; transform: translateY(0); }
+          border: 1px solid rgba(0, 0, 0, 0.08);
         }
 
         .dropdown-header {
-          padding: 10px 16px;
-          font-size: 0.65rem;
+          padding: 12px 16px;
+          font-size: 0.75rem;
           font-weight: 700;
-          letter-spacing: 1px;
           text-transform: uppercase;
-          color: #F9C74F;
-          background: rgba(0,0,0,0.2);
-          border-bottom: 1px solid rgba(255,255,255,0.05);
+          color: #64748b;
+          background: #f8fafc;
+          border-bottom: 1px solid #f1f5f9;
+          letter-spacing: 0.5px;
         }
 
         .region-item {
           display: flex;
           align-items: center;
           gap: 12px;
-          padding: 10px 16px;
+          padding: 12px 16px;
           cursor: pointer;
-          color: rgba(255,255,255,0.85);
-          font-size: 0.85rem;
+          color: #1e293b;
+          font-size: 0.9rem;
           font-weight: 500;
-          transition: all 0.15s;
-          border-bottom: 1px solid rgba(255,255,255,0.03);
+          transition: all 0.15s ease;
         }
-        .region-item:last-child { border-bottom: none; }
-        .region-item:hover {
-          background: rgba(249,199,79,0.15);
-          color: #F9C74F;
-        }
-        .region-dot {
-          width: 8px;
-          height: 8px;
-          background: #BBE1FA;
-          border-radius: 50%;
-          transition: background 0.1s;
-        }
-        .region-item:hover .region-dot { background: #F9C74F; }
 
-        /* Location button */
-        .location-btn {
-          background: rgba(255,255,255,0.12);
-          border: 1px solid rgba(255,255,255,0.25);
-          color: white;
-          cursor: pointer;
-          width: 44px;
-          height: 44px;
+        .region-item:not(:last-child) {
+          border-bottom: 1px solid #f1f5f9;
+        }
+
+        .region-item:hover {
+          background: #f0f9ff;
+          color: #0369a1;
+          padding-left: 20px;
+        }
+
+        .region-dot {
+          width: 6px;
+          height: 6px;
+          background: var(--accent);
           border-radius: 50%;
+        }
+
+        /* Action Buttons & Badges */
+        .location-btn {
+          background: rgba(255, 255, 255, 0.07);
+          border: 1px solid var(--border-color);
+          cursor: pointer;
+          width: 40px;
+          height: 40px;
+          border-radius: 10px;
           display: flex;
           align-items: center;
           justify-content: center;
-          font-size: 1.2rem;
-          transition: all 0.2s;
-          backdrop-filter: blur(6px);
-        }
-        .location-btn:hover {
-          background: #F9C74F;
-          color: #0B3B5F;
-          border-color: #F9C74F;
-          transform: scale(1.05);
+          color: var(--text-main);
+          transition: all 0.2s ease;
         }
 
-        /* Live weather badge */
+        .location-btn:hover {
+          background: rgba(255, 255, 255, 0.15);
+          color: var(--accent);
+          border-color: var(--accent);
+        }
+
         .weather-badge {
           display: flex;
           align-items: center;
           gap: 8px;
-          background: rgba(0,0,0,0.2);
-          border: 1px solid rgba(255,255,255,0.2);
-          border-radius: 60px;
+          background: rgba(34, 197, 94, 0.1);
+          border: 1px solid rgba(34, 197, 94, 0.2);
+          border-radius: 20px;
           padding: 6px 14px;
-          color: rgba(255,255,255,0.9);
+          color: #4ade80;
           font-size: 0.75rem;
           font-weight: 600;
-          backdrop-filter: blur(8px);
-        }
-        .badge-dot {
-          width: 8px;
-          height: 8px;
-          background: #4ade80;
-          border-radius: 50%;
-          animation: pulse 1.8s infinite;
-          box-shadow: 0 0 4px #4ade80;
-        }
-        @keyframes pulse {
-          0%, 100% { opacity: 1; transform: scale(1); }
-          50% { opacity: 0.6; transform: scale(0.85); }
+          letter-spacing: 0.3px;
         }
 
-        /* Mobile toggle (hamburger) */
+        .badge-dot {
+          width: 6px;
+          height: 6px;
+          background: #22c55e;
+          border-radius: 50%;
+          box-shadow: 0 0 8px #22c55e;
+          animation: pulse 2s infinite;
+        }
+
+        @keyframes pulse {
+          0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0.7); }
+          70% { transform: scale(1); box-shadow: 0 0 0 6px rgba(34, 197, 94, 0); }
+          100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(34, 197, 94, 0); }
+        }
+
+        /* Responsive Mobile Architecture */
         .mobile-toggle {
           display: none;
           flex-direction: column;
-          gap: 5px;
-          background: rgba(255,255,255,0.1);
-          border: 1px solid rgba(255,255,255,0.25);
-          border-radius: 12px;
-          padding: 10px 12px;
+          gap: 6px;
+          background: rgba(255, 255, 255, 0.07);
+          border: 1px solid var(--border-color);
+          border-radius: 10px;
+          padding: 12px;
           cursor: pointer;
         }
+
         .mobile-toggle span {
           display: block;
           width: 20px;
           height: 2px;
-          background: white;
+          background: var(--text-main);
           border-radius: 2px;
-          transition: all 0.25s ease;
+          transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
         }
-        .mobile-toggle.open span:nth-child(1) { transform: translateY(7px) rotate(45deg); }
-        .mobile-toggle.open span:nth-child(2) { opacity: 0; transform: scaleX(0); }
-        .mobile-toggle.open span:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
 
-        /* Mobile menu panel */
+        .mobile-toggle.open span:nth-child(1) { transform: translateY(8px) rotate(45deg); }
+        .mobile-toggle.open span:nth-child(2) { opacity: 0; }
+        .mobile-toggle.open span:nth-child(3) { transform: translateY(-8px) rotate(-45deg); }
+
         .mobile-menu {
           overflow: hidden;
           max-height: 0;
           opacity: 0;
-          transition: max-height 0.35s ease, opacity 0.25s ease;
-          background: rgba(11, 59, 95, 0.96);
-          backdrop-filter: blur(20px);
-          border-top: 1px solid rgba(249,199,79,0.2);
+          transition: max-height 0.35s ease-in-out, opacity 0.2s ease;
+          background: #0f172a;
+          border-bottom: 1px solid var(--border-color);
         }
+
         .mobile-menu.open {
-          max-height: 600px;
+          max-height: 100vh;
           opacity: 1;
         }
+
         .mobile-inner {
-          padding: 20px 20px 28px;
+          padding: 24px;
           display: flex;
           flex-direction: column;
-          gap: 18px;
+          gap: 20px;
         }
+
         .mobile-links {
           display: flex;
           flex-direction: column;
@@ -452,154 +450,138 @@ const Navbar = ({ onSearch, onLocationClick }) => {
           margin: 0;
           padding: 0;
         }
+
         .mobile-link-btn {
           background: none;
           border: none;
           cursor: pointer;
-          color: rgba(255,255,255,0.85);
+          color: #94a3b8;
           font-size: 1rem;
           font-weight: 600;
           padding: 12px 16px;
           text-align: left;
-          border-radius: 14px;
-          transition: all 0.2s;
+          border-radius: 10px;
           width: 100%;
+          transition: all 0.2s ease;
         }
+
         .mobile-link-btn:hover,
         .mobile-link-btn.active {
-          background: rgba(249,199,79,0.12);
-          color: #F9C74F;
+          background: rgba(255, 255, 255, 0.05);
+          color: var(--text-main);
         }
+
         .mobile-divider {
           border: none;
-          border-top: 1px solid rgba(255,255,255,0.08);
+          border-top: 1px solid var(--border-color);
+          margin: 4px 0;
         }
+
         .mobile-search-form {
           display: flex;
           flex-direction: column;
           gap: 12px;
         }
+
         .mobile-input-wrap {
           display: flex;
           align-items: center;
-          gap: 10px;
-          background: rgba(255,255,255,0.08);
-          border: 1px solid rgba(255,255,255,0.2);
-          border-radius: 18px;
-          padding: 6px 12px 6px 18px;
-          transition: border 0.2s;
+          gap: 12px;
+          background: rgba(255, 255, 255, 0.05);
+          border: 1px solid var(--border-color);
+          border-radius: 12px;
+          padding: 4px 16px;
         }
-        .mobile-input-wrap:focus-within {
-          border-color: #F9C74F;
-          box-shadow: 0 0 0 2px rgba(249,199,79,0.2);
-        }
+
         .mobile-input {
           flex: 1;
           background: transparent;
           border: none;
           outline: none;
-          color: white;
-          font-size: 0.9rem;
-          font-weight: 500;
           padding: 10px 0;
+          font-size: 0.95rem;
+          color: var(--text-main);
         }
-        .mobile-input::placeholder {
-          color: rgba(255,255,255,0.5);
-        }
+
         .mobile-actions {
           display: flex;
-          gap: 12px;
+          gap: 10px;
         }
+
         .mobile-search-btn {
           flex: 1;
-          background: #F9C74F;
+          background: var(--accent);
           border: none;
           cursor: pointer;
-          color: #0B3B5F;
           font-weight: 700;
-          font-size: 0.85rem;
-          padding: 12px 16px;
-          border-radius: 40px;
-          transition: all 0.2s;
+          padding: 12px;
+          border-radius: 12px;
           display: flex;
           align-items: center;
           justify-content: center;
-          gap: 6px;
+          gap: 8px;
+          color: #0f172a;
         }
-        .mobile-search-btn:hover {
-          background: #FFD966;
-        }
+
         .mobile-loc-btn {
-          background: rgba(255,255,255,0.1);
-          border: 1px solid rgba(255,255,255,0.25);
+          background: rgba(255, 255, 255, 0.05);
+          border: 1px solid var(--border-color);
           cursor: pointer;
-          color: white;
-          font-size: 1.2rem;
-          padding: 0 20px;
-          border-radius: 40px;
-          transition: all 0.2s;
+          padding: 0 16px;
+          border-radius: 12px;
+          color: var(--text-main);
+          display: flex;
+          align-items: center;
+          justify-content: center;
         }
-        .mobile-loc-btn:hover {
-          background: #F9C74F;
-          color: #0B3B5F;
-          border-color: #F9C74F;
-        }
-        .mobile-footer-text {
-          text-align: center;
-          color: rgba(255,255,255,0.5);
-          font-size: 0.7rem;
-          font-weight: 500;
-        }
+
         .mobile-suggestions {
-          background: #0B2A3E;
-          border-radius: 16px;
-          overflow: hidden;
-          border: 1px solid rgba(249,199,79,0.2);
+          background: rgba(255, 255, 255, 0.98);
+          border-radius: 12px;
+          margin-top: 4px;
+          max-height: 200px;
+          overflow-y: auto;
         }
+
         .mobile-suggestion-item {
           display: flex;
           align-items: center;
           gap: 12px;
           padding: 12px 16px;
-          cursor: pointer;
-          color: rgba(255,255,255,0.85);
-          font-size: 0.85rem;
+          color: #0f172a;
+          font-size: 0.9rem;
           font-weight: 500;
-          border-bottom: 1px solid rgba(255,255,255,0.05);
-          transition: background 0.15s;
-        }
-        .mobile-suggestion-item:last-child { border-bottom: none; }
-        .mobile-suggestion-item:hover {
-          background: rgba(249,199,79,0.1);
-          color: #F9C74F;
         }
 
         @media (max-width: 1024px) {
           .weather-badge { display: none; }
-          .search-wrap { max-width: 260px; }
         }
+
         @media (max-width: 768px) {
-          .nav-links, .search-wrap, .location-btn, .weather-badge { display: none !important; }
-          .mobile-toggle { display: flex; }
-          .nav-inner { height: 64px; }
+          .nav-links, .search-wrap, .location-btn {
+            display: none !important;
+          }
+          .mobile-toggle {
+            display: flex;
+          }
+          .nav-inner {
+            height: 68px;
+          }
         }
       `}</style>
 
       <nav className={`gh-nav ${scrolled ? "scrolled" : ""}`}>
         <div className="nav-inner">
-          {/* Logo with weather icon + Ghana star */}
+          {/* Logo Branding */}
           <a href="/" className="nav-logo">
-            <div className="logo-icon-wrap">
-              <span className="weather-icon">☀️</span>
-              <span className="star-badge">★</span>
-            </div>
+            <SunCloudIcon />
             <div className="logo-text">
-              <span className="logo-title">GH<span>-Weather</span></span>
-              <span className="logo-sub">Ghana Forecast</span>
+              <span className="logo-title">GH<span>Weather</span></span>
+              <span className="logo-sub">Ghana Forecast Platform</span>
             </div>
           </a>
 
-          {/* Desktop nav */}
+          {/* Desktop Nav Selection */}
           <ul className="nav-links">
             {NAV_LINKS.map((link) => (
               <li key={link}>
@@ -613,7 +595,7 @@ const Navbar = ({ onSearch, onLocationClick }) => {
             ))}
           </ul>
 
-          {/* Desktop search with region suggestions */}
+          {/* Desktop Autocomplete Context Search */}
           <div className="search-wrap" ref={dropRef}>
             <form className="search-form" onSubmit={handleSubmit}>
               <span className="search-flag">🇬🇭</span>
@@ -623,19 +605,19 @@ const Navbar = ({ onSearch, onLocationClick }) => {
                 className="search-input"
                 value={searchQuery}
                 onChange={handleInputChange}
-                onKeyDown={handleKeyDown}
                 onFocus={() => suggestions.length > 0 && setShowDrop(true)}
-                placeholder="Search region (e.g., Ashanti)..."
+                placeholder="Search specific region..."
                 autoComplete="off"
               />
               <button type="submit" className="search-btn">
-                🔍 Search
+                <SearchIcon />
+                Search
               </button>
             </form>
 
             {showDrop && (
               <div className="region-dropdown">
-                <div className="dropdown-header">🌍 All Ghana Regions</div>
+                <div className="dropdown-header">Ghanaian Regions</div>
                 {suggestions.map((region) => (
                   <div
                     key={region}
@@ -650,26 +632,27 @@ const Navbar = ({ onSearch, onLocationClick }) => {
             )}
           </div>
 
-          {/* Location button + live status */}
-          <button className="location-btn" onClick={onLocationClick} title="Use my current location">
-            📍
+          {/* Quick Actions (Location & Status) */}
+          <button className="location-btn" onClick={onLocationClick} title="Locate Device">
+            <LocationIcon />
           </button>
+
           <div className="weather-badge">
             <span className="badge-dot" />
-            Live Updates
+            Live System
           </div>
 
-          {/* Mobile hamburger */}
+          {/* Hamburger Mobile Toggle */}
           <button
             className={`mobile-toggle ${menuOpen ? "open" : ""}`}
             onClick={() => setMenuOpen(!menuOpen)}
-            aria-label="Menu"
+            aria-label="Toggle Menu"
           >
             <span /><span /><span />
           </button>
         </div>
 
-        {/* Mobile menu */}
+        {/* Collapsible Mobile Control Board */}
         <div className={`mobile-menu ${menuOpen ? "open" : ""}`}>
           <div className="mobile-inner">
             <ul className="mobile-links">
@@ -688,6 +671,7 @@ const Navbar = ({ onSearch, onLocationClick }) => {
               ))}
             </ul>
             <hr className="mobile-divider" />
+
             <div className="mobile-search-form">
               <form onSubmit={(e) => { handleSubmit(e); setMenuOpen(false); }}>
                 <div className="mobile-input-wrap">
@@ -712,15 +696,14 @@ const Navbar = ({ onSearch, onLocationClick }) => {
                           setMenuOpen(false);
                         }}
                       >
-                        <span style={{ fontSize: 12, color: "#F9C74F" }}>⛅</span>
-                        {region} Region
+                        <LocationIcon /> {region} Region
                       </div>
                     ))}
                   </div>
                 )}
                 <div className="mobile-actions">
                   <button type="submit" className="mobile-search-btn">
-                    🔍 Search
+                    <SearchIcon /> Search
                   </button>
                   <button
                     type="button"
@@ -730,12 +713,11 @@ const Navbar = ({ onSearch, onLocationClick }) => {
                       setMenuOpen(false);
                     }}
                   >
-                    📍
+                    <LocationIcon />
                   </button>
                 </div>
               </form>
             </div>
-            <p className="mobile-footer-text">🇬🇭 All 16 regions · Real‑time weather data</p>
           </div>
         </div>
       </nav>
